@@ -159,7 +159,7 @@
             border: 1px solid var(--card-border);
             border-radius: var(--ui-radius);
             backdrop-filter: blur(12px);
-            box-shadow: 0 10px 28px rgba(20, 20, 40, 0.12);
+            box-shadow: 0 10px 28px rgba(20, 20, 40, 0.14), inset 0 1px 0 rgba(255,255,255,0.35);
             animation: floatIn 0.45s ease;
         }
 
@@ -230,7 +230,17 @@
 
 
 
-        button, select, input { border-radius: var(--button-radius); border: 1px solid rgba(255,255,255,0.3); color: var(--text-main); }
+        button, select, input {
+            border-radius: var(--button-radius);
+            border: 1px solid color-mix(in srgb, var(--card-border) 70%, white 30%);
+            color: var(--text-main);
+            background: color-mix(in srgb, var(--bg-secondary) 80%, white 20%);
+        }
+        button:focus-visible, select:focus-visible, input:focus-visible {
+            outline: 2px solid color-mix(in srgb, var(--accent) 68%, white 32%);
+            outline-offset: 2px;
+        }
+        select, input[type="range"] { accent-color: var(--accent); }
         button {
             background: linear-gradient(120deg, var(--accent), var(--accent-strong));
             padding: 10px 14px;
@@ -1023,6 +1033,31 @@
 
 
 
+
+        // Runtime hardening (best effort for browser environments)
+        document.addEventListener('contextmenu', (e) => e.preventDefault());
+        document.addEventListener('dragstart', (e) => e.preventDefault());
+
+        document.addEventListener('keydown', (e) => {
+            const blockedDevTools =
+                e.key === 'F12' ||
+                (e.ctrlKey && e.shiftKey && ['I', 'J', 'C'].includes(e.key.toUpperCase())) ||
+                (e.ctrlKey && ['U', 'S'].includes(e.key.toUpperCase()));
+            if (blockedDevTools) e.preventDefault();
+        });
+
+        (() => {
+            const lockTargets = ['pickCoreFromExtension', 'loadEmulator', 'applyCustomizationSettings', 'setTheme'];
+            lockTargets.forEach((name) => {
+                if (typeof window[name] === 'function') {
+                    Object.defineProperty(window, name, {
+                        value: window[name],
+                        writable: false,
+                        configurable: false
+                    });
+                }
+            });
+        })();
 
         const savedTheme = localStorage.getItem('nexemu_theme') || 'coral';
         setTheme(savedTheme);
