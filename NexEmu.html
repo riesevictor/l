@@ -5,7 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NexEmu</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+        }
 
 
 
@@ -130,7 +136,8 @@
 
         body {
             font-family: var(--ui-font);
-            font-size: calc(16px * var(--ui-scale) / 100);
+            font-size: 16px;
+            zoom: calc(var(--ui-scale) / 100);
             background: radial-gradient(circle at 10% -20%, color-mix(in srgb, var(--accent) 35%, transparent), transparent 42%),
                         radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--accent-strong) 32%, transparent), transparent 40%),
                         linear-gradient(165deg, var(--bg-main), var(--bg-secondary) 78%);
@@ -152,7 +159,7 @@
             border: 1px solid var(--card-border);
             border-radius: var(--ui-radius);
             backdrop-filter: blur(12px);
-            box-shadow: 0 10px 28px rgba(20, 20, 40, 0.12);
+            box-shadow: 0 10px 28px rgba(20, 20, 40, 0.14), inset 0 1px 0 rgba(255,255,255,0.35);
             animation: floatIn 0.45s ease;
         }
 
@@ -223,7 +230,64 @@
 
 
 
-        button, select, input { border-radius: var(--button-radius); border: 1px solid rgba(255,255,255,0.3); color: var(--text-main); }
+        button, select, input:not([type="range"]) {
+            border-radius: var(--button-radius);
+            border: 1px solid color-mix(in srgb, var(--card-border) 70%, white 30%);
+            color: var(--text-main);
+            background: color-mix(in srgb, var(--bg-secondary) 80%, white 20%);
+        }
+        button:focus-visible, select:focus-visible, input:focus-visible {
+            outline: 2px solid color-mix(in srgb, var(--accent) 68%, white 32%);
+            outline-offset: 2px;
+        }
+        select { accent-color: var(--accent); }
+        input[type="range"] {
+            --range-progress: 50%;
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 12px;
+            border-radius: 999px;
+            border: 1px solid color-mix(in srgb, var(--card-border) 66%, white 34%);
+            background: linear-gradient(
+                to right,
+                var(--accent) 0%,
+                var(--accent) var(--range-progress),
+                color-mix(in srgb, var(--bg-secondary) 72%, white 28%) var(--range-progress),
+                color-mix(in srgb, var(--bg-secondary) 72%, white 28%) 100%
+            );
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08);
+            transition: filter 0.2s ease, box-shadow 0.2s ease;
+        }
+        input[type="range"]:hover {
+            filter: brightness(1.04);
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08), 0 0 0 2px color-mix(in srgb, var(--accent) 16%, transparent);
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 2px solid white;
+            background: var(--accent-strong);
+            box-shadow: 0 2px 7px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 2px solid white;
+            background: var(--accent-strong);
+            box-shadow: 0 2px 7px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+        }
+        input[type="range"]::-moz-range-track {
+            height: 12px;
+            border-radius: 999px;
+            border: 1px solid color-mix(in srgb, var(--card-border) 66%, white 34%);
+            background: color-mix(in srgb, var(--bg-secondary) 72%, white 28%);
+        }
         button {
             background: linear-gradient(120deg, var(--accent), var(--accent-strong));
             padding: 10px 14px;
@@ -367,9 +431,16 @@
 
 
 
-        body.compact .topbar { padding: 10px 12px; }
-        body.compact .sidebar, body.compact .main { padding: 14px; }
-        body.compact .card { padding: 10px; }
+        body.density-compact .topbar { padding: 10px 12px; }
+        body.density-compact .sidebar, body.density-compact .main { padding: 14px; }
+        body.density-compact .card { padding: 10px; }
+
+
+
+
+        body.density-condensed .topbar { padding: 8px 10px; }
+        body.density-condensed .sidebar, body.density-condensed .main { padding: 10px; }
+        body.density-condensed .card { padding: 8px; }
 
 
 
@@ -427,11 +498,11 @@
 
 
                 <section class="card">
-                    <h3>Recent Games</h3>
-                    <p class="muted">Keep track of your 5 most recent games.</p>
-                    <div id="recentList" class="space muted">No games loaded yet.</div>
+                    <h3>Recent ROMs</h3>
+                    <p class="muted">Keep track of your 5 most recent ROMs.</p>
+                    <div id="recentList" class="space muted">No ROMs loaded yet.</div>
                     <div class="row space">
-                        <button id="clearRecent" class="ghost">🗑️ Clear Recent Games</button>
+                        <button id="clearRecent" class="ghost">🗑️ Clear Recent ROMs</button>
                     </div>
                 </section>
 
@@ -514,9 +585,13 @@
                                 <input id="layoutWidthSlider" type="range" min="960" max="1600" step="20" value="1320">
                                 <span id="layoutWidthValue">1320px</span>
                             </label>
-                            <label class="row" style="justify-content: space-between;">
-                                Compact Density
-                                <input id="compactModeToggle" type="checkbox" style="width:18px; height:18px;">
+                            <label>
+                                Density
+                                <select id="densityPicker">
+                                    <option value="comfortable">Comfortable</option>
+                                    <option value="compact">Compact</option>
+                                    <option value="condensed">Condensed</option>
+                                </select>
                             </label>
                         </div>
                     </details>
@@ -567,7 +642,6 @@
     <script>
         let sessionStart = null;
         let sessionTimerId = null;
-        let actionCounter = 0;
 
 
 
@@ -577,7 +651,6 @@
         const uploadZone = document.getElementById('uploadZone');
         const sessionStatus = document.getElementById('sessionStatus');
         const coreStat = document.getElementById('coreStat');
-        const actionCount = document.getElementById('actionCount');
         const sessionTimer = document.getElementById('sessionTimer');
         const cornerRadiusSlider = document.getElementById('cornerRadiusSlider');
         const cornerRadiusValue = document.getElementById('cornerRadiusValue');
@@ -587,7 +660,7 @@
         const uiScaleValue = document.getElementById('uiScaleValue');
         const layoutWidthSlider = document.getElementById('layoutWidthSlider');
         const layoutWidthValue = document.getElementById('layoutWidthValue');
-        const compactModeToggle = document.getElementById('compactModeToggle');
+        const densityPicker = document.getElementById('densityPicker');
         const customizationPanel = document.getElementById('customizationPanel');
 
 
@@ -654,7 +727,7 @@
             const data = JSON.parse(localStorage.getItem(key) || '[]');
             const list = document.getElementById('recentList');
             if (!data.length) {
-                list.textContent = 'No games loaded yet.';
+                list.textContent = 'No ROMs loaded yet.';
                 list.className = 'space muted';
                 return;
             }
@@ -669,13 +742,26 @@
 
 
 
+        function updateRangeVisual(slider) {
+            const min = Number(slider.min || 0);
+            const max = Number(slider.max || 100);
+            const value = Number(slider.value || min);
+            const percent = ((value - min) / (max - min || 1)) * 100;
+            slider.style.setProperty('--range-progress', `${percent}%`);
+        }
+
+
+
+
         function applyCustomizationSettings() {
             const radius = Number(localStorage.getItem('nexemu_corner_radius') || 14);
             const buttonShape = localStorage.getItem('nexemu_button_shape') || '8';
             const fontFamily = localStorage.getItem('nexemu_font') || "'Trebuchet MS', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
             const uiScale = Number(localStorage.getItem('nexemu_ui_scale') || 100);
             const appWidth = Number(localStorage.getItem('nexemu_layout_width') || 1320);
-            const compact = localStorage.getItem('nexemu_compact_mode') === 'true';
+            const savedDensity = localStorage.getItem('nexemu_density');
+            const legacyCompact = localStorage.getItem('nexemu_compact_mode') === 'true';
+            const density = savedDensity || (legacyCompact ? 'compact' : 'comfortable');
             const settingsOpen = localStorage.getItem('nexemu_settings_open');
 
 
@@ -686,7 +772,8 @@
             document.documentElement.style.setProperty('--ui-font', fontFamily);
             document.documentElement.style.setProperty('--ui-scale', String(uiScale));
             document.documentElement.style.setProperty('--app-width', String(appWidth));
-            document.body.classList.toggle('compact', compact);
+            document.body.classList.remove('density-comfortable', 'density-compact', 'density-condensed');
+            document.body.classList.add(`density-${density}`);
 
 
 
@@ -699,7 +786,8 @@
             uiScaleValue.textContent = `${uiScale}%`;
             layoutWidthSlider.value = String(appWidth);
             layoutWidthValue.textContent = `${appWidth}px`;
-            compactModeToggle.checked = compact;
+            [cornerRadiusSlider, uiScaleSlider, layoutWidthSlider].forEach(updateRangeVisual);
+            densityPicker.value = density;
             if (settingsOpen !== null) customizationPanel.open = settingsOpen === 'true';
         }
 
@@ -707,27 +795,79 @@
 
 
         async function pickCoreFromExtension(ext) {
-            if (["fds", "nes", "unif", "unf"].includes(ext)) return 'nes';
-            if (["smc", "fig", "sfc", "gd3", "gd7", "dx2", "bsx", "swc"].includes(ext)) return 'snes';
-            if (["z64", "n64"].includes(ext)) return 'n64';
-            if (["nds", "gba", "gb"].includes(ext)) return ext;
-
-
-
-
+            const extensionMap = {
+                // Nintendo
+                nes: 'nes', fds: 'nes', unf: 'nes', unif: 'nes',
+                smc: 'snes', sfc: 'snes', fig: 'snes', swc: 'snes', bs: 'snes', bsx: 'snes', gd3: 'snes', gd7: 'snes', dx2: 'snes',
+                n64: 'n64', z64: 'n64', v64: 'n64',
+                nds: 'nds',
+                gb: 'gb', gbc: 'gb', cgb: 'gb',
+                gba: 'gba',
+                vb: 'vb',
+                // Sony / Sega
+                cue: 'psx', ccd: 'psx', m3u: 'psx', chd: 'psx', pbp: 'psx', img: 'psx', iso: 'psx',
+                psp: 'psp', cso: 'psp',
+                md: 'segaMD', gen: 'segaMD', bin: 'segaMD', smd: 'segaMD',
+                gg: 'segaGG',
+                sms: 'segaMS',
+                saturn: 'segaSaturn',
+                '32x': 'sega32x',
+                // Atari
+                a26: 'atari2600', a52: 'atari5200', a78: 'atari7800', lnx: 'atariLynx', j64: 'atariJaguar', jag: 'atariJaguar',
+                // Commodore
+                d64: 'c64', d71: 'c128', d81: 'c128', t64: 'c64', prg: 'c64', crt: 'c64',
+                adf: 'amiga', adz: 'amiga', dms: 'amiga',
+                pet: 'pet', p4f: 'plus4', vic: 'vic20',
+                // Other
+                zip: 'arcade',
+                col: 'coleco',
+                ch3: '3do'
+            };
+            if (extensionMap[ext]) return extensionMap[ext];
             return await new Promise(resolve => {
-                const cores = {
-                    "Nintendo 64": "n64", "Nintendo Game Boy": "gb", "Nintendo Game Boy Advance": "gba",
-                    "Nintendo DS": "nds", "Nintendo Entertainment System": "nes",
-                    "Super Nintendo Entertainment System": "snes", "PlayStation": "psx"
-                };
+                const cores = [
+                    ['Sega Master System', 'segaMS'],
+                    ['Sega Mega Drive', 'segaMD'],
+                    ['Sega Game Gear', 'segaGG'],
+                    ['Sega Saturn', 'segaSaturn'],
+                    ['Sega 32X', 'sega32x'],
+                    ['Sega CD', 'segaCD'],
+
+                    ['Atari 2600', 'atari2600'],
+                    ['Atari 5200', 'atari5200'],
+                    ['Atari 7800', 'atari7800'],
+                    ['Atari Lynx', 'atariLynx'],
+                    ['Atari Jaguar', 'atariJaguar'],
+
+                    ['Commodore 64', 'c64'],
+                    ['Commodore 128', 'c128'],
+                    ['Commodore Amiga', 'amiga'],
+                    ['Commodore PET', 'pet'],
+                    ['Commodore Plus/4', 'plus4'],
+                    ['Commodore VIC-20', 'vic20'],
+
+                    ['PlayStation', 'psx'],
+                    ['PlayStation Portable', 'psp'],
+                    ['Arcade', 'arcade'],
+                    ['3DO', '3do'],
+                    ['MAME 2003', 'mame2003'],
+                    ['ColecoVision', 'coleco'],
+
+                    ['Nintendo DS', 'nds'],
+                    ['Nintendo 64', 'n64'],
+                    ['Nintendo Entertainment System', 'nes'],
+                    ['Nintendo Game Boy / Color', 'gb'],
+                    ['Nintendo Game Boy Advance', 'gba'],
+                    ['Nintendo Virtual Boy', 'vb'],
+                    ['Super Nintendo Entertainment System', 'snes']
+                ];
                 const modal = document.createElement('div');
                 modal.innerHTML = `<div style="position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:9999; display:grid; place-items:center;">
-                    <div style="background: var(--bg-secondary); color: var(--text-main); border:1px solid var(--card-border); border-radius:var(--ui-radius); width:min(420px,90vw); padding:18px;">
+                    <div style="background: var(--bg-secondary); color: var(--text-main); border:1px solid var(--card-border); border-radius:var(--ui-radius); width:min(480px,92vw); padding:18px;">
                         <h3>Select Console Core</h3>
                         <p style="color: var(--text-muted); margin:6px 0 10px">Unknown file extension, choose a core.</p>
                         <select id="coreSelect" style="width:100%; padding:8px; background: rgba(255,255,255,.5);">
-                            ${Object.entries(cores).map(([name, value]) => `<option value="${value}">${name}</option>`).join('')}
+                            ${cores.map(([name, value]) => `<option value="${value}">${name}</option>`).join('')}
                         </select>
                         <div style="margin-top:12px; text-align:right;"><button id="coreSubmit">Load</button></div>
                     </div>
@@ -740,10 +880,6 @@
                 };
             });
         }
-
-
-
-
         function loadEmulator(file, core) {
             const url = URL.createObjectURL(new Blob([file]));
             const fileName = file.name.replace(/\.[^/.]+$/, '');
@@ -842,7 +978,7 @@
 
 
         document.getElementById('resetPrefs').addEventListener('click', () => {
-            ['nexemu_corner_radius', 'nexemu_button_shape', 'nexemu_font', 'nexemu_ui_scale', 'nexemu_layout_width', 'nexemu_compact_mode', 'nexemu_settings_open', 'nexemu_theme']
+            ['nexemu_corner_radius', 'nexemu_button_shape', 'nexemu_font', 'nexemu_ui_scale', 'nexemu_layout_width', 'nexemu_density', 'nexemu_compact_mode', 'nexemu_settings_open', 'nexemu_theme']
                 .forEach(key => localStorage.removeItem(key));
             setTheme('coral');
             applyCustomizationSettings();
@@ -860,8 +996,8 @@
             const radius = Number(e.target.value);
             document.documentElement.style.setProperty('--ui-radius', `${radius}px`);
             cornerRadiusValue.textContent = `${radius}px`;
+            updateRangeVisual(e.target);
             localStorage.setItem('nexemu_corner_radius', String(radius));
-            bumpActions();
         });
 
 
@@ -870,7 +1006,6 @@
         buttonShapePicker.addEventListener('change', (e) => {
             document.documentElement.style.setProperty('--button-radius', `${e.target.value}px`);
             localStorage.setItem('nexemu_button_shape', e.target.value);
-            bumpActions();
         });
 
 
@@ -879,7 +1014,6 @@
         fontPicker.addEventListener('change', (e) => {
             document.documentElement.style.setProperty('--ui-font', e.target.value);
             localStorage.setItem('nexemu_font', e.target.value);
-            bumpActions();
         });
 
 
@@ -889,6 +1023,7 @@
             const scale = Number(e.target.value);
             document.documentElement.style.setProperty('--ui-scale', String(scale));
             uiScaleValue.textContent = `${scale}%`;
+            updateRangeVisual(e.target);
             localStorage.setItem('nexemu_ui_scale', String(scale));
         });
 
@@ -899,15 +1034,18 @@
             const width = Number(e.target.value);
             document.documentElement.style.setProperty('--app-width', String(width));
             layoutWidthValue.textContent = `${width}px`;
+            updateRangeVisual(e.target);
             localStorage.setItem('nexemu_layout_width', String(width));
         });
 
 
 
 
-        compactModeToggle.addEventListener('change', (e) => {
-            document.body.classList.toggle('compact', e.target.checked);
-            localStorage.setItem('nexemu_compact_mode', String(e.target.checked));
+        densityPicker.addEventListener('change', (e) => {
+            const density = e.target.value;
+            document.body.classList.remove('density-comfortable', 'density-compact', 'density-condensed');
+            document.body.classList.add(`density-${density}`);
+            localStorage.setItem('nexemu_density', density);
         });
 
 
@@ -928,6 +1066,10 @@
 
 
         document.addEventListener('keydown', (e) => {
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+                e.preventDefault();
+            }
+
             const key = e.key.toLowerCase();
             const hasAltShift = e.altKey && e.shiftKey && !e.ctrlKey && !e.metaKey;
 
@@ -948,6 +1090,65 @@
 
 
 
+
+        // Runtime hardening (best effort for browser environments)
+        document.addEventListener('contextmenu', (e) => e.preventDefault());
+        document.addEventListener('dragstart', (e) => e.preventDefault());
+        document.addEventListener('copy', (e) => e.preventDefault());
+        document.addEventListener('cut', (e) => e.preventDefault());
+        document.addEventListener('paste', (e) => e.preventDefault());
+
+        document.addEventListener('keydown', (e) => {
+            const key = e.key.toUpperCase();
+            const blockedDevTools =
+                e.key === 'F12' ||
+                (e.ctrlKey && e.shiftKey && ['I', 'J', 'C', 'K'].includes(key)) ||
+                (e.ctrlKey && ['U', 'S', 'P'].includes(key));
+            if (blockedDevTools) e.preventDefault();
+        });
+
+        (() => {
+            const lockTargets = ['pickCoreFromExtension', 'loadEmulator', 'applyCustomizationSettings', 'setTheme', 'renderRecentRoms'];
+            const originalRefs = {};
+            lockTargets.forEach((name) => {
+                if (typeof window[name] === 'function') {
+                    originalRefs[name] = window[name];
+                    Object.defineProperty(window, name, {
+                        value: window[name],
+                        writable: false,
+                        configurable: false
+                    });
+                }
+            });
+
+            const protectedStyle = document.querySelector('style');
+            const protectedScript = document.currentScript;
+            const initialStyleText = protectedStyle ? protectedStyle.textContent : '';
+
+            function lockdown(reason) {
+                document.body.innerHTML = `<div style="font-family:Arial,sans-serif;padding:24px;color:#fff;background:#111;min-height:100vh;display:grid;place-items:center;text-align:center;">
+                    <div><h2>Tamper detected</h2><p>${reason}</p><p>Reloading is required.</p></div>
+                </div>`;
+            }
+
+            const monitor = () => {
+                try {
+                    lockTargets.forEach((name) => {
+                        if (originalRefs[name] && window[name] !== originalRefs[name]) lockdown(`Function lock violated: ${name}`);
+                    });
+                    if (protectedStyle && protectedStyle.textContent !== initialStyleText) lockdown('Style modifications are blocked.');
+                    if (protectedScript && !document.contains(protectedScript)) lockdown('Script removal detected.');
+                    const devToolsLikelyOpen = (window.outerWidth - window.innerWidth > 180) || (window.outerHeight - window.innerHeight > 180);
+                    if (devToolsLikelyOpen) lockdown('Developer tools detected.');
+                } catch {
+                    lockdown('Runtime guard failure.');
+                }
+            };
+
+            const observer = new MutationObserver(monitor);
+            observer.observe(document.documentElement, { childList: true, subtree: true, attributes: true, characterData: true });
+            setInterval(monitor, 1200);
+        })();
 
         const savedTheme = localStorage.getItem('nexemu_theme') || 'coral';
         setTheme(savedTheme);
