@@ -739,43 +739,59 @@
                 vb: 'vb',
                 // Sony / Sega
                 cue: 'psx', ccd: 'psx', m3u: 'psx', chd: 'psx', pbp: 'psx', img: 'psx', iso: 'psx',
+                psp: 'psp', cso: 'psp',
                 md: 'segaMD', gen: 'segaMD', bin: 'segaMD', smd: 'segaMD',
                 gg: 'segaGG',
                 sms: 'segaMS',
-                sg: 'segaSG1000',
+                saturn: 'segaSaturn',
                 '32x': 'sega32x',
-                cso: 'segaCD',
-                // NEC / SNK / Others
-                pce: 'pce',
-                ngp: 'ngp', ngc: 'ngp',
-                ws: 'ws', wsc: 'ws',
-                col: 'coleco'
+                // Atari
+                a26: 'atari2600', a52: 'atari5200', a78: 'atari7800', lnx: 'atariLynx', j64: 'atariJaguar', jag: 'atariJaguar',
+                // Commodore
+                d64: 'c64', d71: 'c128', d81: 'c128', t64: 'c64', prg: 'c64', crt: 'c64',
+                adf: 'amiga', adz: 'amiga', dms: 'amiga',
+                pet: 'pet', p4f: 'plus4', vic: 'vic20',
+                // Other
+                zip: 'arcade',
+                col: 'coleco',
+                ch3: '3do'
             };
             if (extensionMap[ext]) return extensionMap[ext];
             return await new Promise(resolve => {
                 const cores = [
-                    ['Arcade', 'arcade'],
+                    ['Sega Master System', 'segaMS'],
+                    ['Sega Mega Drive', 'segaMD'],
+                    ['Sega Game Gear', 'segaGG'],
+                    ['Sega Saturn', 'segaSaturn'],
+                    ['Sega 32X', 'sega32x'],
+                    ['Sega CD', 'segaCD'],
+
                     ['Atari 2600', 'atari2600'],
                     ['Atari 5200', 'atari5200'],
                     ['Atari 7800', 'atari7800'],
-                    ['Bandai WonderSwan', 'ws'],
-                    ['Bandai WonderSwan Color', 'ws'],
+                    ['Atari Lynx', 'atariLynx'],
+                    ['Atari Jaguar', 'atariJaguar'],
+
+                    ['Commodore 64', 'c64'],
+                    ['Commodore 128', 'c128'],
+                    ['Commodore Amiga', 'amiga'],
+                    ['Commodore PET', 'pet'],
+                    ['Commodore Plus/4', 'plus4'],
+                    ['Commodore VIC-20', 'vic20'],
+
+                    ['PlayStation', 'psx'],
+                    ['PlayStation Portable', 'psp'],
+                    ['Arcade', 'arcade'],
+                    ['3DO', '3do'],
+                    ['MAME 2003', 'mame2003'],
                     ['ColecoVision', 'coleco'],
-                    ['NEC PC Engine / TurboGrafx-16', 'pce'],
+
                     ['Nintendo DS', 'nds'],
                     ['Nintendo 64', 'n64'],
                     ['Nintendo Entertainment System', 'nes'],
                     ['Nintendo Game Boy / Color', 'gb'],
                     ['Nintendo Game Boy Advance', 'gba'],
                     ['Nintendo Virtual Boy', 'vb'],
-                    ['SNK Neo Geo Pocket', 'ngp'],
-                    ['Sony PlayStation', 'psx'],
-                    ['Sega 32X', 'sega32x'],
-                    ['Sega CD', 'segaCD'],
-                    ['Sega Game Gear', 'segaGG'],
-                    ['Sega Genesis / Mega Drive', 'segaMD'],
-                    ['Sega Master System', 'segaMS'],
-                    ['Sega SG-1000', 'segaSG1000'],
                     ['Super Nintendo Entertainment System', 'snes']
                 ];
                 const modal = document.createElement('div');
