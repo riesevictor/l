@@ -230,7 +230,7 @@
 
 
 
-        button, select, input {
+        button, select, input:not([type="range"]) {
             border-radius: var(--button-radius);
             border: 1px solid color-mix(in srgb, var(--card-border) 70%, white 30%);
             color: var(--text-main);
@@ -240,7 +240,54 @@
             outline: 2px solid color-mix(in srgb, var(--accent) 68%, white 32%);
             outline-offset: 2px;
         }
-        select, input[type="range"] { accent-color: var(--accent); }
+        select { accent-color: var(--accent); }
+        input[type="range"] {
+            --range-progress: 50%;
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 12px;
+            border-radius: 999px;
+            border: 1px solid color-mix(in srgb, var(--card-border) 66%, white 34%);
+            background: linear-gradient(
+                to right,
+                var(--accent) 0%,
+                var(--accent) var(--range-progress),
+                color-mix(in srgb, var(--bg-secondary) 72%, white 28%) var(--range-progress),
+                color-mix(in srgb, var(--bg-secondary) 72%, white 28%) 100%
+            );
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08);
+            transition: filter 0.2s ease, box-shadow 0.2s ease;
+        }
+        input[type="range"]:hover {
+            filter: brightness(1.04);
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08), 0 0 0 2px color-mix(in srgb, var(--accent) 16%, transparent);
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 2px solid white;
+            background: var(--accent-strong);
+            box-shadow: 0 2px 7px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 2px solid white;
+            background: var(--accent-strong);
+            box-shadow: 0 2px 7px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+        }
+        input[type="range"]::-moz-range-track {
+            height: 12px;
+            border-radius: 999px;
+            border: 1px solid color-mix(in srgb, var(--card-border) 66%, white 34%);
+            background: color-mix(in srgb, var(--bg-secondary) 72%, white 28%);
+        }
         button {
             background: linear-gradient(120deg, var(--accent), var(--accent-strong));
             padding: 10px 14px;
@@ -697,6 +744,17 @@
 
 
 
+        function updateRangeVisual(slider) {
+            const min = Number(slider.min || 0);
+            const max = Number(slider.max || 100);
+            const value = Number(slider.value || min);
+            const percent = ((value - min) / (max - min || 1)) * 100;
+            slider.style.setProperty('--range-progress', `${percent}%`);
+        }
+
+
+
+
         function applyCustomizationSettings() {
             const radius = Number(localStorage.getItem('nexemu_corner_radius') || 14);
             const buttonShape = localStorage.getItem('nexemu_button_shape') || '8';
@@ -730,6 +788,7 @@
             uiScaleValue.textContent = `${uiScale}%`;
             layoutWidthSlider.value = String(appWidth);
             layoutWidthValue.textContent = `${appWidth}px`;
+            [cornerRadiusSlider, uiScaleSlider, layoutWidthSlider].forEach(updateRangeVisual);
             densityPicker.value = density;
             if (settingsOpen !== null) customizationPanel.open = settingsOpen === 'true';
         }
@@ -939,6 +998,7 @@
             const radius = Number(e.target.value);
             document.documentElement.style.setProperty('--ui-radius', `${radius}px`);
             cornerRadiusValue.textContent = `${radius}px`;
+            updateRangeVisual(e.target);
             localStorage.setItem('nexemu_corner_radius', String(radius));
             bumpActions();
         });
@@ -968,6 +1028,7 @@
             const scale = Number(e.target.value);
             document.documentElement.style.setProperty('--ui-scale', String(scale));
             uiScaleValue.textContent = `${scale}%`;
+            updateRangeVisual(e.target);
             localStorage.setItem('nexemu_ui_scale', String(scale));
         });
 
@@ -978,6 +1039,7 @@
             const width = Number(e.target.value);
             document.documentElement.style.setProperty('--app-width', String(width));
             layoutWidthValue.textContent = `${width}px`;
+            updateRangeVisual(e.target);
             localStorage.setItem('nexemu_layout_width', String(width));
         });
 
@@ -1100,4 +1162,3 @@
     </script>
 </body>
 </html>
-
