@@ -642,7 +642,6 @@
     <script>
         let sessionStart = null;
         let sessionTimerId = null;
-        let actionCounter = 0;
 
 
 
@@ -652,7 +651,6 @@
         const uploadZone = document.getElementById('uploadZone');
         const sessionStatus = document.getElementById('sessionStatus');
         const coreStat = document.getElementById('coreStat');
-        const actionCount = document.getElementById('actionCount');
         const sessionTimer = document.getElementById('sessionTimer');
         const cornerRadiusSlider = document.getElementById('cornerRadiusSlider');
         const cornerRadiusValue = document.getElementById('cornerRadiusValue');
@@ -1000,7 +998,6 @@
             cornerRadiusValue.textContent = `${radius}px`;
             updateRangeVisual(e.target);
             localStorage.setItem('nexemu_corner_radius', String(radius));
-            bumpActions();
         });
 
 
@@ -1009,7 +1006,6 @@
         buttonShapePicker.addEventListener('change', (e) => {
             document.documentElement.style.setProperty('--button-radius', `${e.target.value}px`);
             localStorage.setItem('nexemu_button_shape', e.target.value);
-            bumpActions();
         });
 
 
@@ -1018,7 +1014,6 @@
         fontPicker.addEventListener('change', (e) => {
             document.documentElement.style.setProperty('--ui-font', e.target.value);
             localStorage.setItem('nexemu_font', e.target.value);
-            bumpActions();
         });
 
 
