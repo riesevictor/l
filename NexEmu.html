@@ -1037,19 +1037,25 @@
         // Runtime hardening (best effort for browser environments)
         document.addEventListener('contextmenu', (e) => e.preventDefault());
         document.addEventListener('dragstart', (e) => e.preventDefault());
+        document.addEventListener('copy', (e) => e.preventDefault());
+        document.addEventListener('cut', (e) => e.preventDefault());
+        document.addEventListener('paste', (e) => e.preventDefault());
 
         document.addEventListener('keydown', (e) => {
+            const key = e.key.toUpperCase();
             const blockedDevTools =
                 e.key === 'F12' ||
-                (e.ctrlKey && e.shiftKey && ['I', 'J', 'C'].includes(e.key.toUpperCase())) ||
-                (e.ctrlKey && ['U', 'S'].includes(e.key.toUpperCase()));
+                (e.ctrlKey && e.shiftKey && ['I', 'J', 'C', 'K'].includes(key)) ||
+                (e.ctrlKey && ['U', 'S', 'P'].includes(key));
             if (blockedDevTools) e.preventDefault();
         });
 
         (() => {
-            const lockTargets = ['pickCoreFromExtension', 'loadEmulator', 'applyCustomizationSettings', 'setTheme'];
+            const lockTargets = ['pickCoreFromExtension', 'loadEmulator', 'applyCustomizationSettings', 'setTheme', 'renderRecentRoms'];
+            const originalRefs = {};
             lockTargets.forEach((name) => {
                 if (typeof window[name] === 'function') {
+                    originalRefs[name] = window[name];
                     Object.defineProperty(window, name, {
                         value: window[name],
                         writable: false,
@@ -1057,6 +1063,34 @@
                     });
                 }
             });
+
+            const protectedStyle = document.querySelector('style');
+            const protectedScript = document.currentScript;
+            const initialStyleText = protectedStyle ? protectedStyle.textContent : '';
+
+            function lockdown(reason) {
+                document.body.innerHTML = `<div style="font-family:Arial,sans-serif;padding:24px;color:#fff;background:#111;min-height:100vh;display:grid;place-items:center;text-align:center;">
+                    <div><h2>Tamper detected</h2><p>${reason}</p><p>Reloading is required.</p></div>
+                </div>`;
+            }
+
+            const monitor = () => {
+                try {
+                    lockTargets.forEach((name) => {
+                        if (originalRefs[name] && window[name] !== originalRefs[name]) lockdown(`Function lock violated: ${name}`);
+                    });
+                    if (protectedStyle && protectedStyle.textContent !== initialStyleText) lockdown('Style modifications are blocked.');
+                    if (protectedScript && !document.contains(protectedScript)) lockdown('Script removal detected.');
+                    const devToolsLikelyOpen = (window.outerWidth - window.innerWidth > 180) || (window.outerHeight - window.innerHeight > 180);
+                    if (devToolsLikelyOpen) lockdown('Developer tools detected.');
+                } catch {
+                    lockdown('Runtime guard failure.');
+                }
+            };
+
+            const observer = new MutationObserver(monitor);
+            observer.observe(document.documentElement, { childList: true, subtree: true, attributes: true, characterData: true });
+            setInterval(monitor, 1200);
         })();
 
         const savedTheme = localStorage.getItem('nexemu_theme') || 'coral';
